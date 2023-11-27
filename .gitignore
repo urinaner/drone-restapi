@@ -1,0 +1,6 @@
+venv/
+.vscode
+*.pt
+*.pyc
+static/*.png
+myvenv
