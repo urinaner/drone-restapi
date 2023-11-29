@@ -15,6 +15,10 @@ app = Flask(__name__)
 DETECTION_URL = "/v1/object-detection/yolov5"
 
 
+@app.route("/")
+def hello():
+    return "선우형 /v1/object-detection/yolov5으로 들어가"
+
 @app.route(DETECTION_URL, methods=["POST"])
 def predict():
     if not request.method == "POST":
@@ -50,9 +54,9 @@ def predict():
         # 새로운 데이터프레임 생성
         new_clean = pd.DataFrame()
 
-        if box_area_percentage > 60:
+        if box_area_percentage > 50:
             new_clean['Status'] = ['traffic']
-        elif box_area_percentage > 50:
+        elif box_area_percentage > 35:
             new_clean['Status'] = ['nomal']
         else:
             new_clean['Status'] = ['no_traffic']
@@ -67,8 +71,24 @@ def predict():
         combined_json = {'type': json_obj1, 'traffic': json_obj2}
 
         # 딕셔너리를 JSON 형태의 문자열로 변환
-        final_json = json.dumps(combined_json)
+        
+        new_format = {}
 
+        # type 필드 처리
+        for item in combined_json['type']:
+            new_format[item['name']] = item['count']
+
+        # traffic 필드 처리
+        new_format['traffic'] = combined_json['traffic'][0]['Status']
+        if new_format['traffic'] == 'no_traffic':
+            new_format['traffic'] = 0
+        elif new_format['traffic'] == 'no_traffic':
+            new_format['traffic'] = 1
+        else:
+            new_format['traffic'] = 2
+
+
+        final_json = json.dumps(new_format)
         print(new_clean)
         print(results)
 
